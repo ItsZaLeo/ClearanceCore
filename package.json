@@ -1,0 +1,18 @@
+{
+  "name": "bypass-core",
+  "version": "1.0.0",
+  "description": "The ultimate minimalist engine for Cloudflare & Bot detection.",
+  "main": "bypass.js",
+  "scripts": {
+    "start": "node bypass.js"
+  },
+  "keywords": [
+    "cloudflare",
+    "bypass",
+    "scraper",
+    "cookies",
+    "automation"
+  ],
+  "author": "ItsZaLeo",
+  "license": "MIT"
+}
