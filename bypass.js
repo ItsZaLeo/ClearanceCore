@@ -77,9 +77,15 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
           if (code !== 0) throw new Error(err || `Exit code ${code}`);
           const res = JSON.parse(out);
           if (res.success) {
-            res.exp = res.created + (Math.floor(Math.random() * 30) + 60); // 60-90s for QUICK TEST
-            this.pool[domain].slots[slotIndex].cookie = res;
-            this.logEvent(`\x1b[32m✅ [${domain}]\x1b[0m Fresh Cookie ready for Slot \x1b[36m#${slotIndex + 1}\x1b[0m.`);
+            res.exp = res.created + (Math.floor(Math.random() * 6) + 10) * 60; 
+            
+            if (!this.pool[domain].slots[slotIndex].cookie) {
+              this.pool[domain].slots[slotIndex].cookie = res; // First fill
+              this.logEvent(`\x1b[32m✅ [${domain}]\x1b[0m Slot \x1b[36m#${slotIndex + 1}\x1b[0m initialized.`);
+            } else {
+              this.pool[domain].slots[slotIndex].next = res; // Proactive buffer
+              this.logEvent(`\x1b[32m✅ [${domain}]\x1b[0m New Cookie buffered for Slot \x1b[36m#${slotIndex + 1}\x1b[0m.`);
+            }
           } else {
             this.logEvent(`\x1b[33m⚠️  [${domain}]\x1b[0m Solve failed: \x1b[31m${res.error}\x1b[0m`);
           }
@@ -131,7 +137,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
 
       for (const site of this.sites) {
         if (!this.pool[site.domain]) {
-          this.pool[site.domain] = { slots: Array.from({ length: site.size || 1 }, () => ({ cookie: null, solving: false })) };
+          this.pool[site.domain] = { slots: Array.from({ length: site.size || 1 }, () => ({ cookie: null, solving: false, next: null })) };
         }
 
         const slots = this.pool[site.domain].slots;
@@ -144,19 +150,27 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
              const left = cookie.exp - now;
              const end = new Date(cookie.exp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
              
+             // SWAP LOGIC: If we hit 0 and have a buffered next, swap it.
+             if (left <= 0 && slot.next) {
+               slot.cookie = slot.next;
+               slot.next = null;
+               this.logEvent(`\x1b[32m🔄 [${site.domain}]\x1b[0m Slot \x1b[36m#${i+1}\x1b[0m rotated instantly.`);
+             }
+
              if (left <= 0) {
-               clockStr = '\x1b[31mExpired (Rotating...)\x1b[0m';
+               clockStr = '\x1b[31mExpired (Refilling...)\x1b[0m';
              } else {
-               const color = '\x1b[36m'; // Stay blue until 0
-               clockStr = `${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})\x1b[0m`;
+               const color = left < 30 ? '\x1b[31m' : '\x1b[36m';
+               const statusStr = slot.next ? ' \x1b[32m(Ready)\x1b[0m' : (slot.solving ? ' \x1b[33m(Preparing...)\x1b[0m' : '');
+               clockStr = `${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})${statusStr}\x1b[0m`;
              }
           }
 
           statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Slot #${i+1} | \x1b[1mClock:\x1b[0m ${clockStr}`);
 
-          // Trigger solve logic only at 0 or invalid
-          const needsSolve = !cookie || cookie.valid === false || (cookie.exp - now) <= 0;
-          if (needsSolve && !slot.solving) {
+          // PROACTIVE PRE-FETCH: Start solve at 30s
+          const timeToNext = cookie ? (cookie.exp - now) : 0;
+          if ((!cookie || cookie.valid === false || timeToNext < 30) && !slot.solving && !slot.next) {
              this.solve(site.domain, i);
           }
         });
