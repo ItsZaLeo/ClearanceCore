@@ -18,7 +18,6 @@ class ClearanceCore {
       "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edge/120.0.0.0"
     ];
-    this.solvingCount = 0;
     this.pyLogic = `import sys,json,time,cloudscraper
 def s(u, ua):
  try:
@@ -60,8 +59,10 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
     this.events.push({ msg, time: Date.now() });
   }
 
-  async solve(domain) {
-    this.solvingCount++;
+  async solve(domain, slotIndex) {
+    if (this.pool[domain].slots[slotIndex].solving) return;
+    this.pool[domain].slots[slotIndex].solving = true;
+
     return new Promise(r => {
       const u = domain.startsWith('http') ? domain : `https://${domain}`;
       const ua = this.uas[Math.floor(Math.random() * this.uas.length)];
@@ -71,36 +72,40 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
       p.stdout.on('data', d => out += d);
       p.stderr.on('data', d => err += d);
       p.on('close', (code) => {
-        this.solvingCount--;
+        this.pool[domain].slots[slotIndex].solving = false;
         try {
           if (code !== 0) throw new Error(err || `Exit code ${code}`);
           const res = JSON.parse(out);
           if (res.success) {
-            if (!this.pool[domain]) this.pool[domain] = { pool: [] };
-            res.exp = res.created + (Math.floor(Math.random() * 6) + 10) * 60; // 10-15m random life
-            this.pool[domain].pool.push(res);
-            this.logEvent(`\x1b[32m✅ [${domain}]\x1b[0m Cookie Ready (\x1b[36m${this.pool[domain].pool.length}\x1b[0m in pool).`);
-            this.lastError = false;
+            res.exp = res.created + (Math.floor(Math.random() * 6) + 10) * 60; // REVERTED TO 10-15 MIN
+            this.pool[domain].slots[slotIndex].cookie = res;
+            this.logEvent(`\x1b[32m✅ [${domain}]\x1b[0m Fresh Cookie ready for Slot \x1b[36m#${slotIndex + 1}\x1b[0m.`);
           } else {
             this.logEvent(`\x1b[33m⚠️  [${domain}]\x1b[0m Solve failed: \x1b[31m${res.error}\x1b[0m`);
-            this.lastError = true;
           }
         } catch (e) { 
           this.logEvent(`\x1b[31m❌ [${domain}]\x1b[0m Runtime Error: ${e.message}`);
-          this.lastError = true; 
         } r();
       });
     });
   }
 
   get(domain) {
-    const list = (this.pool[domain]?.pool || []).filter(c => c.valid !== false && (!c.exp || Math.floor(Date.now() / 1000) < c.exp));
-    return list.sort((a, b) => b.created - a.created)[0] || null;
+    if (!this.pool[domain]) return null;
+    const items = this.pool[domain].slots
+      .map(s => s.cookie)
+      .filter(c => c && c.valid !== false && (!c.exp || Math.floor(Date.now() / 1000) < c.exp));
+    return items.sort((a, b) => b.created - a.created)[0] || null;
   }
 
   invalidate(domain, cookieStr) {
     if (this.pool[domain]) {
-      this.pool[domain].pool.forEach(c => { if (c.cookie === cookieStr) { c.valid = false; this.logEvent(`\x1b[31m🚫 [${domain}]\x1b[0m Cookie dead. Refilling...`); } });
+      this.pool[domain].slots.forEach(s => { 
+        if (s.cookie && s.cookie.cookie === cookieStr) { 
+           s.cookie.valid = false; 
+           this.logEvent(`\x1b[31m🚫 [${domain}]\x1b[0m Cookie in Slot dead. Refilling...`); 
+        } 
+      });
     }
   }
 
@@ -109,7 +114,6 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
     process.stdout.write('\x1Bc'); // Clear terminal
     console.log(`\x1b[32m🚀 ClearanceCore Engine Online | By ItsZaLeo\x1b[0m\n`);
     
-    let lastErrorRetry = 0;
     this.lastLineCount = 0;
 
     setInterval(async () => {
@@ -126,39 +130,37 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
       if (this.events.length > 0) statusLines.push(''); // spacer
 
       for (const site of this.sites) {
-        if (!this.pool[site.domain]) this.pool[site.domain] = { pool: [] };
-
-        // Clean truly expired ones
-        this.pool[site.domain].pool = this.pool[site.domain].pool.filter(c => c.valid !== false && (!c.exp || now < c.exp));
-        
-        // Count "Strong" cookies (those with > 30s left)
-        const strongCookies = this.pool[site.domain].pool.filter(c => !c.exp || (c.exp - now) > 30);
-        const count = this.pool[site.domain].pool.length;
-        const target = site.size || 1; 
-
-        // Add each cookie on its own line
-        this.pool[site.domain].pool.forEach((c, i) => {
-          const left = c.exp - now;
-          const end = new Date(c.exp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-          const color = left < 30 ? '\x1b[31m' : '\x1b[36m';
-          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Cookie #${i+1} | Clock: ${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})\x1b[0m`);
-        });
-
-        // Add placeholder lines if fetching
-        for (let i = 0; i < this.solvingCount; i++) {
-          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Refilling Slot | \x1b[33mProactive Solve Active...\x1b[0m`);
-        }
-        for (let i = count + this.solvingCount; i < target; i++) {
-          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Cookie Slot | \x1b[33mFetching Initial...\x1b[0m`);
+        if (!this.pool[site.domain]) {
+          this.pool[site.domain] = { slots: Array.from({ length: site.size || 1 }, () => ({ cookie: null, solving: false })) };
         }
 
-        // Proactive Refresh: Solve if we don't have enough "Strong" cookies
-        if (strongCookies.length + this.solvingCount < target) {
-          if (this.lastError && strongCookies.length === 0 && now - lastErrorRetry < 60) return;
+        const slots = this.pool[site.domain].slots;
+
+        slots.forEach((slot, i) => {
+          const cookie = slot.cookie;
+          let clockStr = '\x1b[33mFetching Initial...\x1b[0m';
           
-          this.solve(site.domain);
-          lastErrorRetry = Math.floor(Date.now() / 1000);
-        }
+          if (cookie) {
+             const left = cookie.exp - now;
+             const end = new Date(cookie.exp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+             
+             if (left <= 0) {
+               clockStr = '\x1b[31mExpired (Rotating...)\x1b[0m';
+             } else {
+               const color = left < 30 ? '\x1b[31m' : '\x1b[36m';
+               const rotStr = slot.solving ? ' | \x1b[33mRotating...\x1b[0m' : '';
+               clockStr = `${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})${rotStr}\x1b[0m`;
+             }
+          }
+
+          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Slot #${i+1} | \x1b[1mClock:\x1b[0m ${clockStr}`);
+
+          // Trigger solve logic
+          const needsSolve = !cookie || cookie.valid === false || (cookie.exp - now) < 30;
+          if (needsSolve && !slot.solving) {
+             this.solve(site.domain, i);
+          }
+        });
       }
 
       // Update multi-line status
