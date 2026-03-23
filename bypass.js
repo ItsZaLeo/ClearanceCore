@@ -77,7 +77,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
           if (code !== 0) throw new Error(err || `Exit code ${code}`);
           const res = JSON.parse(out);
           if (res.success) {
-            res.exp = res.created + (Math.floor(Math.random() * 6) + 10) * 60; 
+            res.exp = res.created + (Math.floor(Math.random() * 30) + 60); // 60-90s for QUICK TEST
             
             if (!this.pool[domain].slots[slotIndex].cookie) {
               this.pool[domain].slots[slotIndex].cookie = res; // First fill
@@ -126,8 +126,8 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
       const now = Math.floor(Date.now() / 1000);
       let statusLines = [];
 
-      // Filter events (7s life)
-      this.events = this.events.filter(e => Date.now() - e.time < 7000);
+      // Filter events (4s life)
+      this.events = this.events.filter(e => Date.now() - e.time < 4000);
       this.events.forEach(e => {
         const timestamp = `\x1b[90m[${new Date(e.time).toLocaleTimeString()}]\x1b[0m`;
         statusLines.push(`${timestamp} ${e.msg}`);
@@ -148,7 +148,6 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
           
           if (cookie) {
              const left = cookie.exp - now;
-             const end = new Date(cookie.exp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
              
              // SWAP LOGIC: If we hit 0 and have a buffered next, swap it.
              if (left <= 0 && slot.next) {
@@ -162,7 +161,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
              } else {
                const color = left < 30 ? '\x1b[31m' : '\x1b[36m';
                const statusStr = slot.next ? ' \x1b[32m(Ready)\x1b[0m' : (slot.solving ? ' \x1b[33m(Preparing...)\x1b[0m' : '');
-               clockStr = `${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})${statusStr}\x1b[0m`;
+               clockStr = `${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s${statusStr}\x1b[0m`;
              }
           }
 
