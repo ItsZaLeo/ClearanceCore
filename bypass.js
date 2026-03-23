@@ -3,6 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
+const BANNER = `
+\x1b[36m██████╗ ██╗   ██╗██████╗  █████╗ ███████╗███████╗ ██████╗ ██████╗ ███████╗
+██╔══██╗╚██╗ ██╔╝██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝
+██████╔╝ ╚████╔╝ ██████╔╝███████║███████╗███████╗██║     ██████╔╝█████╗  
+██╔══██╗  ╚██╔╝  ██╔═══╝ ██╔══██║╚════██║╚════██║██║     ██╔══██╗██╔══╝  
+██████╔╝   ██║   ██║     ██║  ██║███████║███████║╚██████╗██║  ██║███████╗
+╚═════╝    ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝
+\x1b[32m       🛡️  Bypass Engine | By ItsZaLeo & Antigravity \x1b[0m
+`;
+
 class BypassCore {
   constructor(sites = [], dir = __dirname) {
     this.sites = sites;
@@ -45,19 +55,19 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
 
   checkSetup() {
     if (!fs.existsSync(this.pyPath)) {
-      process.stdout.write('🛠️  Building solver engine...');
+      process.stdout.write('\x1b[33m🛠️  Building solver engine...\x1b[0m');
       try {
         execSync(`python3 -m venv ${this.venv}`, { stdio: 'ignore' });
         execSync(`${this.venv}/bin/pip install cloudscraper`, { stdio: 'ignore' });
-        console.log(' ✅ Ready.');
-      } catch (e) { console.error(' ❌ Install Failed.'); process.exit(1); }
+        console.log(' \x1b[32m✅ Ready.\x1b[0m');
+      } catch (e) { console.error(' \x1b[31m❌ Install Failed.\x1b[0m'); process.exit(1); }
     }
   }
 
   logEvent(msg) {
     process.stdout.clearLine(0);
     process.stdout.cursorTo(0);
-    console.log(msg);
+    console.log(`\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m ${msg}`);
   }
 
   async solve(domain) {
@@ -77,15 +87,15 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
             if (!this.pool[domain]) this.pool[domain] = { pool: [] };
             res.exp = res.created + (Math.floor(Math.random() * 6) + 10) * 60; // 10-15m random life
             this.pool[domain].pool.push(res);
-            this.logEvent(`✅ [${domain}] Cookie ready (${this.pool[domain].pool.length} in pool).`);
+            this.logEvent(`\x1b[32m✅ [${domain}]\x1b[0m Cookie Ready (\x1b[36m${this.pool[domain].pool.length}\x1b[0m in pool).`);
             this.lastError = false;
           } else {
-            this.logEvent(`⚠️  [${domain}] Solve failed: ${res.error}`);
+            this.logEvent(`\x1b[33m⚠️  [${domain}]\x1b[0m Solve failed: \x1b[31m${res.error}\x1b[0m`);
             this.lastError = true;
           }
-        } catch (e) {
-          this.logEvent(`❌ [${domain}] Runtime Error: ${e.message}`);
-          this.lastError = true;
+        } catch (e) { 
+          this.logEvent(`\x1b[31m❌ [${domain}]\x1b[0m Runtime Error: ${e.message}`);
+          this.lastError = true; 
         } r();
       });
     });
@@ -98,14 +108,15 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
 
   invalidate(domain, cookieStr) {
     if (this.pool[domain]) {
-      this.pool[domain].pool.forEach(c => { if (c.cookie === cookieStr) { c.valid = false; this.logEvent(`🚫 [${domain}] Cookie dead. Refilling...`); } });
+      this.pool[domain].pool.forEach(c => { if (c.cookie === cookieStr) { c.valid = false; this.logEvent(`\x1b[31m🚫 [${domain}]\x1b[0m Cookie dead. Refilling...`); } });
     }
   }
 
   async run() {
     process.stdout.write('\x1B[?25l'); // Hide cursor
-    console.log('🛡️  BypassCore active (Status Display Mode).');
-
+    process.stdout.write('\x1Bc'); // Clear terminal
+    console.log(BANNER);
+    
     let lastStatusUpdate = 0;
 
     setInterval(async () => {
@@ -117,24 +128,24 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
 
         // Clean
         this.pool[site.domain].pool = this.pool[site.domain].pool.filter(c => c.valid !== false && (!c.exp || now < c.exp));
-
+        
         const count = this.pool[site.domain].pool.length;
-        const target = site.size || 1;
+        const target = site.size || 1; 
         const countdowns = this.pool[site.domain].pool
           .map(c => {
             const left = c.exp - now;
-            return `${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s`;
+            return `\x1b[36m${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s\x1b[0m`;
           })
           .join(', ');
 
-        statusStr += `📊 [${site.domain}] ${count}/${target} active | Clock: [ ${countdowns || 'Fetching...'} ]  `;
+        statusStr += `\x1b[34m📊 [${site.domain}]\x1b[0m ${count}/${target} active | Clock: [ ${countdowns || '\x1b[33mFetching...\x1b[0m'} ]  `;
 
         if (count < target && (now - lastStatusUpdate > 10 || count === 0)) {
           if (!this.solving) {
             this.solving = true;
             if (this.lastError && count === 0) {
-              this.logEvent(`🧘 [${site.domain}] Waiting 60s for cool-down...`);
-              await new Promise(r => setTimeout(r, 60000));
+               this.logEvent(`\x1b[33m🧘 [${site.domain}]\x1b[0m Waiting 60s for cool-down...`);
+               await new Promise(r => setTimeout(r, 60000));
             }
             await this.solve(site.domain);
             this.solving = false;
