@@ -5,7 +5,7 @@ The ultimate minimalist engine for Cloudflare Clearance Cookie generation. **Eng
 
 ## ⚡ Quick Setup & Run
 ```bash
-git clone https://github.com/ItsZaLeo/bypass-core.git && cd bypass-core && node bypass.js
+git clone https://github.com/ItsZaLeo/ClearanceCore.git && cd ClearanceCore && node ClearanceCore.js
 ```
 
 ---
@@ -47,7 +47,7 @@ const sites = [
 ## 📦 Integration
 ClearanceCore is designed to be a drop-in engine for your larger projects.
 ```javascript
-const ClearanceCore = require('./bypass.js');
+const ClearanceCore = require('./ClearanceCore.js');
 
 // Initialize with a 4-cookie buffer and optional Residential Proxy
 const core = new ClearanceCore([
