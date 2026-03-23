@@ -1,21 +1,27 @@
-# Security Policy
+# 🛡️ Security Policy
 
-## Supported Versions
+At **ClearanceCore**, we take security seriously. We are committed to maintaining a safe, transparent, and robust bypass engine for researchers and developers.
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+## 📦 Supported Versions
+We currently only provide security updates for the latest major version.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 1.x.x   | :white_check_mark: |
+| < 1.0.0 | :x:                |
 
-## Reporting a Vulnerability
+## 🕵️ Reporting a Vulnerability
+We encourage anyone who finds a security vulnerability to report it responsibly. If you find a bug that could be misused, please follow these steps:
 
-Use this section to tell people how to report a vulnerability.
+1.  **Do not create a public issue.** This helps prevent a vulnerability from being exploited before a fix is ready.
+2.  **Contact us:** Send a detailed report via GitHub's **Private Vulnerability Reporting** feature or through a private message.
+3.  **Include details:** Provide a clear description of the issue, steps to reproduce it, and the potential impact.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+## ⚡ Our Commitment
+Once a vulnerability is reported, our team will:
+- Acknowledge your report within **48 hours**. 🏙️🏾
+- Provide a timeline for a fix and keep you updated on the progress.
+- Publicly credit you for your discovery (if you wish) once the security patch is released. 🏆🏾🏆🏾
+
+---
+*ClearanceCore is an educational tool. We believe in the security through transparency and responsible disclosure.*
