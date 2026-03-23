@@ -3,6 +3,13 @@ The ultimate minimalist engine for Cloudflare & Bot detection.
 
 ---
 
+## ⚡ Quick Setup & Run
+```bash
+git clone https://github.com/ItsZaLeo/bypass-core.git && cd bypass-core && node bypass.js
+```
+
+---
+
 ## 🛠️ Features
 - **Live Clock Display:** Real-time ticking countdown showing cookie life.
 - **Auto-UA Rotation:** Randomly switches between 5 modern User-Agents for stealth.
