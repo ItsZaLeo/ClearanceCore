@@ -176,6 +176,8 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2], sys.argv[3]
              this.solve(site.domain, i, site.proxy);
           }
         });
+
+        statusLines.push(''); // ADD SPACE BETWEEN SITES
       }
 
       // Update multi-line status
@@ -197,7 +199,8 @@ module.exports = ClearanceCore;
 
 if (require.main === module) {
   const core = new ClearanceCore([
-    { domain: 'example.com', size: 1 }
+    { domain: 'es.wallapop.com', size: 2 },
+    { domain: 'www.vinted.fr', size: 4 }
   ]);
   core.run();
 }
