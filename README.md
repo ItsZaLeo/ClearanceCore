@@ -70,6 +70,19 @@ setInterval(() => {
 
 ---
 
+## 📜 License
+This project is licensed under the **MIT License**. You are free to use, modify, and distribute it as long as the original copyright notice is included. See the `LICENSE` file for details.
+
+---
+
+## ⚠️ Legal Disclaimer
+**ClearanceCore** is provided for **educational and research purposes only.** The author (**ItsZaLeo**) assumes no responsibility for how this tool is used. By using this software, you agree that:
+- You will not use it to violate the Terms of Service of any website.
+- You are solely responsible for your own actions and any consequences thereof.
+- The software is provided "as is" without any warranties of any kind.
+
+---
+
 ## 🌐 Author & Vision
 **Developed by ItsZaLeo**
 *Focusing on high-performance, minimalist tools for the modern web.*
