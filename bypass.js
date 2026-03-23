@@ -55,8 +55,11 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
   }
 
   logEvent(msg) {
-    process.stdout.clearLine(0);
-    process.stdout.cursorTo(0);
+    if (this.lastLineCount > 0) {
+      process.stdout.moveCursor(0, -this.lastLineCount);
+      process.stdout.clearScreenDown();
+      this.lastLineCount = 0;
+    }
     console.log(`\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m ${msg}`);
   }
 
@@ -108,7 +111,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
     this.logEvent('\x1b[32m🚀 ClearanceCore Engine Online | By ItsZaLeo\x1b[0m');
     
     let lastStatusUpdate = 0;
-    let lastLineCount = 0;
+    this.lastLineCount = 0;
 
     setInterval(async () => {
       const now = Math.floor(Date.now() / 1000);
@@ -153,14 +156,15 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
       }
 
       // Update multi-line status
-      if (lastLineCount > 0) {
-        process.stdout.moveCursor(0, -lastLineCount);
+      if (this.lastLineCount > 0) {
+        process.stdout.moveCursor(0, -this.lastLineCount);
       }
+      process.stdout.clearScreenDown();
       statusLines.forEach(line => {
         process.stdout.clearLine(0);
-        console.log(line);
+        process.stdout.write(line + '\n');
       });
-      lastLineCount = statusLines.length;
+      this.lastLineCount = statusLines.length;
 
     }, 1000); // 1-second ticks
   }
