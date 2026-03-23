@@ -32,7 +32,7 @@ To maintain a perfect IP reputation and avoid Cloudflare 403/429 blocks, follow 
 1.  **Slot Size (4-8 per Site):** On a standard home IP, avoid running more than 8 slots per domain. 4-6 is the "Sweet Spot" for stealth.
 2.  **Rotation (15+ Minutes):** Never rotate faster than 10 minutes for prolonged periods. Our default 10-15m range is highly recommended.
 3.  **The Golden Rule (2-5s Delay):** Even with a valid cookie, **NEVER** spam requests. Add a 2-5 second delay between your actual scraping calls to simulate human browsing patterns.
-4.  **IP Quality:** If you plan on scaling beyond 20+ cookies, always use **Residential Proxies** to distribute the solver load.
+4.  **IP Quality:** If you plan on scaling beyond 20+ cookies, always use **Residential Proxies** to distribute the solver load. (Recommended: [Evomi](https://evomi.com/))
 
 ### 🛡️ Example: Safe Home-IP Config
 ```javascript
