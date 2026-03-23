@@ -3,16 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-const BANNER = `
-\x1b[36m ██████╗██╗     ███████╗ █████╗ ██████╗  █████╗ ███╗   ██╗ ██████╗███████╗ ██████╗ ██████╗ ██████╗ ███████╗
-██╔════╝██║     ██╔════╝██╔══██╗██╔══██╗██╔══██╗████╗  ██║██╔════╝██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔════╝
-██║     ██║     █████╗  ███████║██████╔╝███████║██╔██╗ ██║██║     █████╗  ██║     ██║   ██║██████╔╝█████╗  
-██║     ██║     ██╔══╝  ██╔══██║██╔══██╗██╔══██║██║╚██╗██║██║     ██╔══╝  ██║     ██║   ██║██╔══██╗██╔══╝  
-╚██████╗███████╗███████╗██║  ██║██║  ██║██║  ██║██║ ╚████║╚██████╗███████╗╚██████╗╚██████╔╝██║  ██║███████╗
- ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝ ╚═════╝ ╚══════╝ ╚═╝  ╚═╝╚══════╝
-\x1b[32m     🛡️  Cloudflare Clearance Cookie Generator | By ItsZaLeo \x1b[0m
-`;
-
 class ClearanceCore {
   constructor(sites = [], dir = __dirname) {
     this.sites = sites;
@@ -114,10 +104,8 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
 
   async run() {
     process.stdout.write('\x1B[?25l'); // Hide cursor
-    process.stdout.write('\x1Bc'); // Clear terminal
-    console.log(BANNER);
     
-    this.logEvent('\x1b[32m🚀 ClearanceCore Engine Online.\x1b[0m');
+    this.logEvent('\x1b[32m🚀 ClearanceCore Engine Online | By ItsZaLeo\x1b[0m');
     
     let lastStatusUpdate = 0;
 
