@@ -1,5 +1,5 @@
-# 🛡️ BypassCore 1-FILE MASTER
-The ultimate minimalist engine for Cloudflare & Bot detection.
+# 🛡️ ClearanceCore 1-FILE MASTER
+The ultimate minimalist engine for Cloudflare Clearance Cookie generation.
 
 ---
 
@@ -27,7 +27,7 @@ git clone https://github.com/ItsZaLeo/bypass-core.git && cd bypass-core && node 
 2.  **Add Your Target Website:**
     Go to the bottom of `bypass.js` and edit the sites list.
     ```javascript
-    const core = new BypassCore([{ domain: 'example.com', size: 1 }]);
+    const core = new ClearanceCore([{ domain: 'example.com', size: 1 }]);
     ```
 
 ---
@@ -41,8 +41,8 @@ git clone https://github.com/ItsZaLeo/bypass-core.git && cd bypass-core && node 
 ## 🏗️ Integration
 To use this engine in your other scripts, just `require` it:
 ```javascript
-const BypassCore = require('./bypass.js');
-const core = new BypassCore([{ domain: 'example.com', size: 3 }]);
+const ClearanceCore = require('./bypass.js');
+const core = new ClearanceCore([{ domain: 'example.com', size: 3 }]);
 core.run(); // Starts the ticking solver loop
 
 // Later, retrieve the latest valid cookie & UA:

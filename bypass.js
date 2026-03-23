@@ -4,16 +4,16 @@ const path = require('path');
 const readline = require('readline');
 
 const BANNER = `
-\x1b[36m██████╗ ██╗   ██╗██████╗  █████╗ ███████╗███████╗ ██████╗ ██████╗ ███████╗
-██╔══██╗╚██╗ ██╔╝██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝
-██████╔╝ ╚████╔╝ ██████╔╝███████║███████╗███████╗██║     ██████╔╝█████╗  
-██╔══██╗  ╚██╔╝  ██╔═══╝ ██╔══██║╚════██║╚════██║██║     ██╔══██╗██╔══╝  
-██████╔╝   ██║   ██║     ██║  ██║███████║███████║╚██████╗██║  ██║███████╗
-╚═════╝    ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝
-\x1b[32m       🛡️  Bypass Engine | By ItsZaLeo & Antigravity \x1b[0m
+\x1b[36m ██████╗██╗     ███████╗ █████╗ ██████╗  █████╗ ███╗   ██╗ ██████╗███████╗ ██████╗ ██████╗ ██████╗ ███████╗
+██╔════╝██║     ██╔════╝██╔══██╗██╔══██╗██╔══██╗████╗  ██║██╔════╝██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔════╝
+██║     ██║     █████╗  ███████║██████╔╝███████║██╔██╗ ██║██║     █████╗  ██║     ██║   ██║██████╔╝█████╗  
+██║     ██║     ██╔══╝  ██╔══██║██╔══██╗██╔══██║██║╚██╗██║██║     ██╔══╝  ██║     ██║   ██║██╔══██╗██╔══╝  
+╚██████╗███████╗███████╗██║  ██║██║  ██║██║  ██║██║ ╚████║╚██████╗███████╗╚██████╗╚██████╔╝██║  ██║███████╗
+ ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝ ╚═════╝ ╚══════╝ ╚═╝  ╚═╝╚══════╝
+\x1b[32m     🛡️  Cloudflare Clearance Cookie Generator | By ItsZaLeo \x1b[0m
 `;
 
-class BypassCore {
+class ClearanceCore {
   constructor(sites = [], dir = __dirname) {
     this.sites = sites;
     this.dir = dir;
@@ -117,6 +117,8 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
     process.stdout.write('\x1Bc'); // Clear terminal
     console.log(BANNER);
     
+    this.logEvent('\x1b[32m🚀 ClearanceCore Engine Online.\x1b[0m');
+    
     let lastStatusUpdate = 0;
 
     setInterval(async () => {
@@ -162,10 +164,10 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
   }
 }
 
-module.exports = BypassCore;
+module.exports = ClearanceCore;
 
 if (require.main === module) {
-  const core = new BypassCore([
+  const core = new ClearanceCore([
     { domain: 'example.com', size: 1 }
   ]);
   core.run();
