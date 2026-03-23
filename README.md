@@ -37,8 +37,8 @@ To maintain a perfect IP reputation and avoid Cloudflare 403/429 blocks, follow 
 ### 🛡️ Example: Safe Home-IP Config
 ```javascript
 const sites = [
-  { domain: 'es.wallapop.com', size: 4 }, // Safe & stealthy
-  { domain: 'vinted.es', size: 4 }       // Balanced for home IP
+  { domain: 'sneaker-shop.com', size: 4 }, // Safe & stealthy
+  { domain: 'crypto-market.io', size: 4 }  // Balanced for home IP
 ];
 ```
 
