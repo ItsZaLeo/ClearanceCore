@@ -19,7 +19,7 @@ class ClearanceCore {
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edge/120.0.0.0"
     ];
     this.pyLogic = `import sys,json,time,cloudscraper
-def s(u, ua):
+def s(u, ua, px=None):
  try:
   scr=cloudscraper.create_scraper(browser={'browser':'chrome','platform':'windows','desktop':True})
   scr.headers.update({
@@ -28,19 +28,19 @@ def s(u, ua):
    'Accept-Language':'en-US,en;q=0.9',
    'Referer':'https://www.google.com/'
   })
-  url = u
+  p = {'http': px, 'https': px} if px else None
   # 🧘 Attempt 1
-  t=scr.get(url, timeout=30); time.sleep(2)
+  t=scr.get(u, proxies=p, timeout=30); time.sleep(2)
   if t.status_code == 200: res = t
   else:
    # 🚪 Attempt 2 (Verification/Retry)
-   res=scr.get(url, timeout=30)
+   res=scr.get(u, proxies=p, timeout=30)
   
   if res.status_code != 200: return {"success":False,"error":f"Status {res.status_code}"}
   d=scr.cookies.get_dict()
   return {"success":True,"cookie":'; '.join([f'{k}={v}' for k,v in d.items()]),"ua":scr.headers.get('User-Agent',ua),"created":int(time.time()),"valid":True}
  except Exception as e: return {"success":False,"error":str(e)}
-if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
+if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)))`;
     this.checkSetup();
   }
 
@@ -59,14 +59,17 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
     this.events.push({ msg, time: Date.now() });
   }
 
-  async solve(domain, slotIndex) {
+  async solve(domain, slotIndex, proxy) {
     if (this.pool[domain].slots[slotIndex].solving) return;
     this.pool[domain].slots[slotIndex].solving = true;
 
     return new Promise(r => {
       const u = domain.startsWith('http') ? domain : `https://${domain}`;
       const ua = this.uas[Math.floor(Math.random() * this.uas.length)];
-      const p = spawn(this.pyPath, ['-c', this.pyLogic, u, ua]);
+      const args = ['-c', this.pyLogic, u, ua];
+      if (proxy) args.push(proxy);
+
+      const p = spawn(this.pyPath, args);
       let out = '';
       let err = '';
       p.stdout.on('data', d => out += d);
@@ -170,7 +173,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
           // PROACTIVE PRE-FETCH: Start solve at 30s
           const timeToNext = cookie ? (cookie.exp - now) : 0;
           if ((!cookie || cookie.valid === false || timeToNext < 30) && !slot.solving && !slot.next) {
-             this.solve(site.domain, i);
+             this.solve(site.domain, i, site.proxy);
           }
         });
       }

@@ -44,13 +44,19 @@ const sites = [
 
 ---
 
-## 🏗️ Integration
+## 📦 Integration
 ClearanceCore is designed to be a drop-in engine for your larger projects.
 ```javascript
 const ClearanceCore = require('./bypass.js');
 
-// Initialize with a 4-cookie buffer for es.wallapop.com
-const core = new ClearanceCore([{ domain: 'es.wallapop.com', size: 4 }]);
+// Initialize with a 4-cookie buffer and optional Residential Proxy
+const core = new ClearanceCore([
+  { 
+    domain: 'es.wallapop.com', 
+    size: 4,
+    proxy: 'http://user:pass@p.proxy.com:8000' // Optional Proxy Support
+  }
+]);
 core.run(); // Start the background solver
 
 // Retrieve the freshest cookie anytime
