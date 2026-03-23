@@ -18,6 +18,7 @@ class ClearanceCore {
       "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edge/120.0.0.0"
     ];
+    this.solvingCount = 0;
     this.pyLogic = `import sys,json,time,cloudscraper
 def s(u, ua):
  try:
@@ -60,6 +61,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
   }
 
   async solve(domain) {
+    this.solvingCount++;
     return new Promise(r => {
       const u = domain.startsWith('http') ? domain : `https://${domain}`;
       const ua = this.uas[Math.floor(Math.random() * this.uas.length)];
@@ -69,6 +71,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
       p.stdout.on('data', d => out += d);
       p.stderr.on('data', d => err += d);
       p.on('close', (code) => {
+        this.solvingCount--;
         try {
           if (code !== 0) throw new Error(err || `Exit code ${code}`);
           const res = JSON.parse(out);
@@ -106,7 +109,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
     process.stdout.write('\x1Bc'); // Clear terminal
     console.log(`\x1b[32m🚀 ClearanceCore Engine Online | By ItsZaLeo\x1b[0m\n`);
     
-    let lastStatusUpdate = 0;
+    let lastErrorRetry = 0;
     this.lastLineCount = 0;
 
     setInterval(async () => {
@@ -125,38 +128,36 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
       for (const site of this.sites) {
         if (!this.pool[site.domain]) this.pool[site.domain] = { pool: [] };
 
-        // Clean
+        // Clean truly expired ones
         this.pool[site.domain].pool = this.pool[site.domain].pool.filter(c => c.valid !== false && (!c.exp || now < c.exp));
         
+        // Count "Strong" cookies (those with > 30s left)
+        const strongCookies = this.pool[site.domain].pool.filter(c => !c.exp || (c.exp - now) > 30);
         const count = this.pool[site.domain].pool.length;
         const target = site.size || 1; 
-
-        // Add site header if needed (optional)
-        // statusLines.push(`\x1b[34m🌐 ${site.domain}\x1b[0m`);
 
         // Add each cookie on its own line
         this.pool[site.domain].pool.forEach((c, i) => {
           const left = c.exp - now;
           const end = new Date(c.exp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Cookie #${i+1} | Clock: \x1b[36m${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})\x1b[0m`);
+          const color = left < 30 ? '\x1b[31m' : '\x1b[36m';
+          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Cookie #${i+1} | Clock: ${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})\x1b[0m`);
         });
 
         // Add placeholder lines if fetching
-        for (let i = count; i < target; i++) {
-          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Cookie #${i+1} | \x1b[33mFetching...\x1b[0m`);
+        for (let i = 0; i < this.solvingCount; i++) {
+          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Refilling Slot | \x1b[33mProactive Solve Active...\x1b[0m`);
+        }
+        for (let i = count + this.solvingCount; i < target; i++) {
+          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Cookie Slot | \x1b[33mFetching Initial...\x1b[0m`);
         }
 
-        if (count < target && (now - lastStatusUpdate > 10 || count === 0)) {
-          if (!this.solving) {
-            this.solving = true;
-            if (this.lastError && count === 0) {
-              this.logEvent(`\x1b[33m🧘 [${site.domain}]\x1b[0m Waiting 60s for cool-down...`);
-              await new Promise(r => setTimeout(r, 60000));
-            }
-            await this.solve(site.domain);
-            this.solving = false;
-            lastStatusUpdate = Math.floor(Date.now() / 1000);
-          }
+        // Proactive Refresh: Solve if we don't have enough "Strong" cookies
+        if (strongCookies.length + this.solvingCount < target) {
+          if (this.lastError && strongCookies.length === 0 && now - lastErrorRetry < 60) return;
+          
+          this.solve(site.domain);
+          lastErrorRetry = Math.floor(Date.now() / 1000);
         }
       }
 
