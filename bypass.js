@@ -124,7 +124,8 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
         const countdowns = this.pool[site.domain].pool
           .map(c => {
             const left = c.exp - now;
-            return `\x1b[36m${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s\x1b[0m`;
+            const end = new Date(c.exp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            return `\x1b[36m${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})\x1b[0m`;
           })
           .join(', ');
 
@@ -156,7 +157,7 @@ module.exports = ClearanceCore;
 
 if (require.main === module) {
   const core = new ClearanceCore([
-    { domain: 'example.com', size: 1 }
+    { domain: 'es.wallapop.com', size: 4 }
   ]);
   core.run();
 }
