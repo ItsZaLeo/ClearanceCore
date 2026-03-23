@@ -108,10 +108,11 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
     this.logEvent('\x1b[32m🚀 ClearanceCore Engine Online | By ItsZaLeo\x1b[0m');
     
     let lastStatusUpdate = 0;
+    let lastLineCount = 0;
 
     setInterval(async () => {
       const now = Math.floor(Date.now() / 1000);
-      let statusStr = '';
+      let statusLines = [];
 
       for (const site of this.sites) {
         if (!this.pool[site.domain]) this.pool[site.domain] = { pool: [] };
@@ -121,22 +122,28 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
         
         const count = this.pool[site.domain].pool.length;
         const target = site.size || 1; 
-        const countdowns = this.pool[site.domain].pool
-          .map(c => {
-            const left = c.exp - now;
-            const end = new Date(c.exp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-            return `\x1b[36m${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})\x1b[0m`;
-          })
-          .join(', ');
 
-        statusStr += `\x1b[34m📊 [${site.domain}]\x1b[0m ${count}/${target} active | Clock: [ ${countdowns || '\x1b[33mFetching...\x1b[0m'} ]  `;
+        // Add site header if needed (optional)
+        // statusLines.push(`\x1b[34m🌐 ${site.domain}\x1b[0m`);
+
+        // Add each cookie on its own line
+        this.pool[site.domain].pool.forEach((c, i) => {
+          const left = c.exp - now;
+          const end = new Date(c.exp * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Cookie #${i+1} | Clock: \x1b[36m${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})\x1b[0m`);
+        });
+
+        // Add placeholder lines if fetching
+        for (let i = count; i < target; i++) {
+          statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Cookie #${i+1} | \x1b[33mFetching...\x1b[0m`);
+        }
 
         if (count < target && (now - lastStatusUpdate > 10 || count === 0)) {
           if (!this.solving) {
             this.solving = true;
             if (this.lastError && count === 0) {
-               this.logEvent(`\x1b[33m🧘 [${site.domain}]\x1b[0m Waiting 60s for cool-down...`);
-               await new Promise(r => setTimeout(r, 60000));
+              this.logEvent(`\x1b[33m🧘 [${site.domain}]\x1b[0m Waiting 60s for cool-down...`);
+              await new Promise(r => setTimeout(r, 60000));
             }
             await this.solve(site.domain);
             this.solving = false;
@@ -145,9 +152,15 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
         }
       }
 
-      // Update ticking status line
-      process.stdout.cursorTo(0);
-      process.stdout.write(statusStr);
+      // Update multi-line status
+      if (lastLineCount > 0) {
+        process.stdout.moveCursor(0, -lastLineCount);
+      }
+      statusLines.forEach(line => {
+        process.stdout.clearLine(0);
+        console.log(line);
+      });
+      lastLineCount = statusLines.length;
 
     }, 1000); // 1-second ticks
   }
