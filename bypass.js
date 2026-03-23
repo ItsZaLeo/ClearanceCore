@@ -27,7 +27,7 @@ def s(u, ua):
    'Accept-Language':'en-US,en;q=0.9',
    'Referer':'https://www.google.com/'
   })
-  url = u.rstrip('/') + '/catalog' if 'vinted' in u and not u.endswith('/catalog') else u
+  url = u
   # 🧘 Attempt 1
   t=scr.get(url, timeout=30); time.sleep(2)
   if t.status_code == 200: res = t
@@ -155,7 +155,7 @@ module.exports = BypassCore;
 
 if (require.main === module) {
   const core = new BypassCore([
-    { domain: 'es.wallapop.com', size: 4 }
+    { domain: 'example.com', size: 1 }
   ]);
   core.run();
 }
