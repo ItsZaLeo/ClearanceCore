@@ -77,7 +77,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
           if (code !== 0) throw new Error(err || `Exit code ${code}`);
           const res = JSON.parse(out);
           if (res.success) {
-            res.exp = res.created + (Math.floor(Math.random() * 30) + 60); // 60-90s for QUICK TEST
+            res.exp = res.created + (Math.floor(Math.random() * 6) + 10) * 60; // 10-15 MIN LIFE
             
             if (!this.pool[domain].slots[slotIndex].cookie) {
               this.pool[domain].slots[slotIndex].cookie = res; // First fill
@@ -194,7 +194,7 @@ module.exports = ClearanceCore;
 
 if (require.main === module) {
   const core = new ClearanceCore([
-    { domain: 'es.wallapop.com', size: 4 }
+    { domain: 'example.com', size: 1 }
   ]);
   core.run();
 }
