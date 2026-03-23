@@ -8,6 +8,7 @@ class ClearanceCore {
     this.sites = sites;
     this.dir = dir;
     this.pool = {};
+    this.events = [];
     this.venv = path.join(this.dir, '.venv');
     this.pyPath = path.join(this.venv, 'bin/python3');
     this.uas = [
@@ -55,12 +56,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
   }
 
   logEvent(msg) {
-    if (this.lastLineCount > 0) {
-      process.stdout.moveCursor(0, -this.lastLineCount);
-      process.stdout.clearScreenDown();
-      this.lastLineCount = 0;
-    }
-    console.log(`\x1b[90m[${new Date().toLocaleTimeString()}]\x1b[0m ${msg}`);
+    this.events.push({ msg, time: Date.now() });
   }
 
   async solve(domain) {
@@ -107,8 +103,8 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
 
   async run() {
     process.stdout.write('\x1B[?25l'); // Hide cursor
-    
-    this.logEvent('\x1b[32m🚀 ClearanceCore Engine Online | By ItsZaLeo\x1b[0m');
+    process.stdout.write('\x1Bc'); // Clear terminal
+    console.log(`\x1b[32m🚀 ClearanceCore Engine Online | By ItsZaLeo\x1b[0m\n`);
     
     let lastStatusUpdate = 0;
     this.lastLineCount = 0;
@@ -116,6 +112,15 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
     setInterval(async () => {
       const now = Math.floor(Date.now() / 1000);
       let statusLines = [];
+
+      // Filter events (7s life)
+      this.events = this.events.filter(e => Date.now() - e.time < 7000);
+      this.events.forEach(e => {
+        const timestamp = `\x1b[90m[${new Date(e.time).toLocaleTimeString()}]\x1b[0m`;
+        statusLines.push(`${timestamp} ${e.msg}`);
+      });
+
+      if (this.events.length > 0) statusLines.push(''); // spacer
 
       for (const site of this.sites) {
         if (!this.pool[site.domain]) this.pool[site.domain] = { pool: [] };
