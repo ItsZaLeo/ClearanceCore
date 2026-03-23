@@ -77,7 +77,7 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
           if (code !== 0) throw new Error(err || `Exit code ${code}`);
           const res = JSON.parse(out);
           if (res.success) {
-            res.exp = res.created + (Math.floor(Math.random() * 6) + 10) * 60; // REVERTED TO 10-15 MIN
+            res.exp = res.created + (Math.floor(Math.random() * 30) + 60); // 60-90s for QUICK TEST
             this.pool[domain].slots[slotIndex].cookie = res;
             this.logEvent(`\x1b[32m✅ [${domain}]\x1b[0m Fresh Cookie ready for Slot \x1b[36m#${slotIndex + 1}\x1b[0m.`);
           } else {
@@ -147,16 +147,15 @@ if __name__=='__main__':print(json.dumps(s(sys.argv[1], sys.argv[2])))`;
              if (left <= 0) {
                clockStr = '\x1b[31mExpired (Rotating...)\x1b[0m';
              } else {
-               const color = left < 30 ? '\x1b[31m' : '\x1b[36m';
-               const rotStr = slot.solving ? ' | \x1b[33mRotating...\x1b[0m' : '';
-               clockStr = `${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})${rotStr}\x1b[0m`;
+               const color = '\x1b[36m'; // Stay blue until 0
+               clockStr = `${color}${Math.floor(left / 60)}m ${String(left % 60).padStart(2, '0')}s (${end})\x1b[0m`;
              }
           }
 
           statusLines.push(`📊 \x1b[34m[${site.domain}]\x1b[0m Slot #${i+1} | \x1b[1mClock:\x1b[0m ${clockStr}`);
 
-          // Trigger solve logic
-          const needsSolve = !cookie || cookie.valid === false || (cookie.exp - now) < 30;
+          // Trigger solve logic only at 0 or invalid
+          const needsSolve = !cookie || cookie.valid === false || (cookie.exp - now) <= 0;
           if (needsSolve && !slot.solving) {
              this.solve(site.domain, i);
           }
